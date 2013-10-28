@@ -30,7 +30,7 @@ class Query(object):
 URLS = {
     Query.REPOSITORY: 'https://bitbucket.org/api/1.0/user/repositories/',
     Query.ISSUES:     ('https://bitbucket.org/api/1.0/repositories/'
-                       '{owner}/{slug}/issues/'),
+                       '{owner}/{slug}/issues/?status=new&status=open'),
 }
 
 
@@ -38,13 +38,24 @@ def main():
     if not get_credentials():
         return 1
 
-    sys.stdout.write('<html><ul>')
+    sys.stdout.write('<html>')
     for repo in run_query(Query.REPOSITORY):
         (owner, slug) = (repo['owner'], repo['slug'])
-        sys.stderr.write('{}/{}\n'.format(owner, slug))
-        for issue in get_issues_for_repo(owner, slug):
-            write_issue_html(owner, slug, issue)
-    sys.stdout.write('</ul></html>')
+
+        issues = list(get_issues_for_repo(owner, slug))
+        sys.stderr.write('{}/{}: {} issues\n'.format(owner, slug, len(issues)))
+        if issues:
+            sys.stdout.write(
+                '<h2><a target="_blank" '
+                'href="http://bitbucket.org/{owner}/{slug}/issues/">'
+                '{owner}/{slug}</a></h2><ul>'.format(owner=owner, slug=slug))
+
+            for issue in get_issues_for_repo(owner, slug):
+                write_issue_html(owner, slug, issue)
+
+            sys.stdout.write("</ul>")
+
+    sys.stdout.write('</html>')
     return 0
 
 
@@ -77,13 +88,14 @@ def run_query(query, **args):
 
 
 def write_issue_html(owner, slug, issue):
-    sys.stdout.write('<li>{owner}/{slug} <a href="{url}">#{id} '
-                     '"{title}"</a></li>\n'.format(
-                     url=issue.url,
-                     owner=owner,
-                     slug=slug,
-                     id=issue.id,
-                     title=issue.title))
+    sys.stdout.write(
+        '<li><a href="{url}" target="_blank">'
+        '"{title}"</a> #{id}</li>\n'.format(
+            url=issue.url,
+            owner=owner,
+            slug=slug,
+            id=issue.id,
+            title=issue.title))
 
 
 def get_issues_for_repo(owner, slug):
