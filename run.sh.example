@@ -1,0 +1,20 @@
+#!/bin/bash -e
+
+TO=you@youremailaddress.com
+export BITBUCKET_USERNAME="your username"
+export BITBUCKET_PASSWORD="your password"
+
+########
+
+THIS_SCRIPT=$(readlink -f $0)
+THIS_DIR=$(dirname ${THIS_SCRIPT})
+
+TMPFILE=$(mktemp --suffix .html)
+
+${THIS_DIR}/get_bitbucket_issues.py > ${TMPFILE} 2> /dev/null
+
+SUBJECT="BitBucket Issues $(date +%F)"
+
+cat ${TMPFILE} | mail -a "Content-type: text/html" -s "${SUBJECT}" ${TO}
+
+rm ${TMPFILE}
