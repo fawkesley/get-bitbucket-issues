@@ -3,6 +3,7 @@
 
 from __future__ import unicode_literals
 
+import codecs
 import os
 import sys
 import json
@@ -125,4 +126,5 @@ def make_issue_url(owner, slug, issue_id):
 
 
 if __name__ == '__main__':
+    sys.stdout = codecs.getwriter('utf-8')(sys.stdout)
     sys.exit(main())
