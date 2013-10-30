@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/bin/bash
 
 TO=you@youremailaddress.com
 export BITBUCKET_USERNAME="your username"
@@ -10,11 +10,16 @@ THIS_SCRIPT=$(readlink -f $0)
 THIS_DIR=$(dirname ${THIS_SCRIPT})
 
 TMPFILE=$(mktemp --suffix .html)
+RUNLOG=$(mktemp --suffix .log)
 
-${THIS_DIR}/get_bitbucket_issues.py > ${TMPFILE} 2> /dev/null
+${THIS_DIR}/get_bitbucket_issues.py > ${TMPFILE} 2> ${RUNLOG} /dev/null
+RETCODE=$?
+if [ ${RETCODE} != 0 ]; then
+    cat ${RUNLOG}
+    exit 1
+else
+    SUBJECT="BitBucket Issues $(date +%F)"
+    cat ${TMPFILE} | mail -a "Content-type: text/html" -s "${SUBJECT}" ${TO}
+fi
 
-SUBJECT="BitBucket Issues $(date +%F)"
-
-cat ${TMPFILE} | mail -a "Content-type: text/html" -s "${SUBJECT}" ${TO}
-
-rm ${TMPFILE}
+rm ${TMPFILE} ${RUNLOG}
