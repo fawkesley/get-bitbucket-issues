@@ -1,0 +1,6 @@
+MAILTO="paul@scraperwiki.com"
+
+* * * * * crontab ~/tool/crontab.txt
+
+# 0 = Sunday
+30 8 * * 1 ~/tool/run.sh
